@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.OMG.YaWarehouse">
+	<select id="inventoryList" parameterType="warehouse" resultType="warehouse">
+		SELECT  DISTINCT
+		    i.name ,
+		    i.code,
+		    w.reg_date,
+		    w.code ,
+		    w.cnt,
+		    w.ym,
+		    w.inven,
+		    pd.price
+		FROM
+		    item i
+		LEFT JOIN
+		    warehouse w ON i.code = w.code 
+		LEFT JOIN
+		    pur_detail pd ON i.code = pd.code
+		where w.inven = 1        
+	
+	</select>
+	
+	<select id="itemListSelectOne"  parameterType="item" resultType="item">
+		SELECT code, name
+		FROM   item
+		ORDER BY  code DESC
+	</select>	
+	
+	<select id="searchAll" resultType="warehouse">
+		SELECT  DISTINCT
+		    i.name ,
+		    i.code,
+		    w.reg_date,
+		    w.code ,
+		    w.cnt,
+		   	w.ym,
+		   	 w.inven,
+		    pd.price
+		FROM
+		    item i
+		LEFT JOIN
+		    warehouse w ON i.code = w.code 
+		LEFT JOIN
+		    pur_detail pd ON i.code = pd.code	
+        WHERE
+        (i.code = #{code} OR #{code} = '0')
+        AND (SUBSTR(w.ym, 5, 2) = #{month} OR #{month} = '0')
+        AND w.inven = 1  
+	</select>
+	
+	<select id="searchAllInventory" resultType="warehouse">
+		SELECT  DISTINCT
+		    i.name ,
+		    i.code,
+		    w.reg_date,
+		    w.code ,
+		    w.cnt,
+		    w.ym,
+		    w.inven,
+		    pd.price
+		FROM
+		    item i
+		LEFT JOIN
+		    warehouse w ON i.code = w.code 
+		LEFT JOIN
+		    pur_detail pd ON i.code = pd.code	
+        WHERE
+            w.inven = 1    
+        	AND SUBSTR(w.ym, 5, 2) = #{month} 
+     
+	</select>
+	
+	<select id="searchForAllMonth" resultType="warehouse">
+		SELECT  DISTINCT
+		    i.name ,
+		    i.code,
+		    w.reg_date,
+		    w.code ,
+		    w.cnt,
+		    w.ym,
+		    w.inven,
+		    pd.price
+		FROM
+		    item i
+		LEFT JOIN
+		    warehouse w ON i.code = w.code 
+		LEFT JOIN
+		    pur_detail pd ON i.code = pd.code	
+        WHERE
+        	w.inven = 1  
+        	AND
+            i.code= #{code}	
+          
+	</select>
+	
+	<select id="inventorySearch" resultType="warehouse">
+		SELECT  DISTINCT
+		    i.name ,
+		    i.code,
+		    w.reg_date,
+		    w.code ,
+		    w.cnt,
+		    w.ym,
+		    W.inven,
+		    pd.price
+		FROM
+		    item i
+		LEFT JOIN
+		    warehouse w ON i.code = w.code
+		LEFT JOIN
+		    pur_detail pd ON i.code = pd.code	
+        WHERE
+        	w.inven = 1  
+        	AND
+        	i.code= #{code} 
+            AND SUBSTR(w.ym, 5, 2) = #{month} 
+          
+	</select>
+	
+</mapper>
+	

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org/DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.oracle.OMG.mappers.chPurchase">
+	
+	<select id="chTotalPur" parameterType="Purchase" resultType="int">
+		Select count(*)
+		From purchase
+		<where>
+	        <if test="custcode > 0">
+	            AND (custcode = #{custcode})
+	        </if>
+	        <if test="pur_date != null">
+	            AND (pur_date = #{pur_date})
+	        </if>
+	    </where>
+	</select>
+	
+	<select id="chPurList" parameterType="Purchase" resultType="Purchase">
+		Select *
+		From (Select ROWNUM rn, a.*
+				From(Select p.*, m.mem_name appli_name, c.company, c.mem_id mgr_id
+				    From purchase p, member m, customer c
+				    Where p.mem_id = m.mem_id
+	                <if test="custcode > 0">
+	                    AND (p.custcode = #{custcode})
+	                </if>
+	                <if test="pur_date != null">
+	                    AND (p.pur_date = #{pur_date})
+	                </if>
+			        and p.custcode = c.custcode
+				    Order by p.pur_date DESC) a
+		     ) b
+		WHERE rn BETWEEN #{start} and #{end}
+	</select>
+	
+	<select id="chPurDList" parameterType="Purchase" resultType="PurDetail">
+		Select pd.*,i.name item_name, pd.qty * pd.price price_sum
+		From pur_detail pd, item i
+		Where pd.pur_date = #{pur_date}
+		and   pd.custcode = #{custcode}
+		and   pd.code = i.code
+		Order by pd.custcode	
+	</select>
+	
+	<select id="chPurOne" parameterType="Purchase" resultType="Purchase">
+		Select p.*,c.company,c.mem_id mgr_id, m.mem_name appli_name, mgr.mem_name mgr_name
+		From purchase p, customer c, member m, member mgr
+		Where 	p.pur_date = #{pur_date}
+		and		p.custcode = #{custcode}
+		and 	p.custcode = c.custcode
+		and		p.mem_id   = m.mem_id
+		and		c.mem_id   = mgr.mem_id
+	</select>
+	
+	<insert id="chInsertDetail" parameterType="PurDetail">
+		Insert into pur_detail(pur_date, custcode, code, qty, price) 
+		values(#{pur_date}, #{custcode}, #{code}, #{qty}, #{price})
+	</insert>
+	
+	<select id="chCountDitem" parameterType="PurDetail" resultType="int">
+		Select Count(*)
+		From pur_detail
+		Where 	pur_date = #{pur_date}
+		and		code = #{code}
+	</select>
+	
+	<insert id="chPurWrite" parameterType="Purchase">
+		Insert into Purchase(PUR_DATE,CUSTCODE,PUR_STATUS,TITLE,MEM_ID<if test="ref != null">, REF</if>)
+		Values(sysdate, #{custcode}, 0, #{title}, #{mem_id}<if test="ref != null">, #{ref}</if>)
+	</insert>
+	
+	<insert id="detailWrite" parameterType="PurDetail">
+			Insert into pur_detail(pur_date, custcode, code, qty, price) 
+			values(sysdate, #{custcode}, #{code}, #{qty}, #{price})
+	</insert>
+	
+	<update id="chQtyUpdate" parameterType="Purchase">
+		Update pur_detail
+		Set qty = #{qty}
+		Where pur_date = #{pur_date}
+		and code = #{code}
+	</update>
+	
+	<update id="chcompletePur" parameterType="Purchase">
+		Update Purchase
+		Set pur_status = 1
+		Where pur_date = #{pur_date}
+		and custcode = #{custcode}
+	</update>
+	
+	<delete id="chdeletePur" parameterType="Purchase">
+		Delete Purchase
+		Where pur_date = #{pur_date}
+		and custcode = #{custcode} 
+	</delete>
+	
+	<update id="chpurUpdate" parameterType="Purchase">
+		Update Purchase
+		Set title = #{title}, ref = #{ref}
+		Where pur_date = #{pur_date}
+		and custcode = #{custcode} 
+	</update>
+	
+	<delete id="chDeletePurDet" parameterType="PurDetail">
+		Delete Pur_detail
+		Where pur_date = #{pur_date}
+		and code = #{code}
+	</delete>
+</mapper>

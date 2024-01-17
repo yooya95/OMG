@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.OMG.YrItem">
+	<select id="yrItemList" parameterType="Item" resultType="Item">
+		SELECT i.*, cm.com_cn, cs.company
+		FROM item i, comm cm, customer cs
+		where i.custcode = cs.custcode
+		and i.cate_lg = cm.ct_lg
+		and i.cate_md = cm.ct_md
+		<choose>
+			<when test="deleted == 0">
+				and i.deleted = 0
+			</when>
+			<when test="deleted == 1">
+				and i.deleted = 1
+			</when>
+			<when test="deleted == 100"> </when>
+		</choose>
+		
+		<choose>
+			<when test="cate_md == 999"> </when>
+			<when test="cate_md == ''"> </when>
+			<otherwise>
+				and i.cate_md = ${cate_md}
+			</otherwise>
+		</choose>
+		
+		<if test="keyword != null and keyword != ''">
+			AND (i.code       LIKE '%' || #{keyword} || '%'
+			    OR i.name     LIKE '%' || #{keyword} || '%'
+			    OR i.custcode LIKE '%' || #{keyword} || '%'
+			    OR cs.company LIKE '%' || #{keyword} || '%')		
+		</if>
+		ORDER BY i.code
+	</select>
+	
+	<select id="yrSelectItem" parameterType="int" resultType="Item">
+		SELECT  cm.com_cn, cs.company, 
+		        to_char(i.reg_date,'yyyy-MM-dd') AS reg_date,
+		        to_char(i.delete_date, 'yyyy-MM-dd') AS delete_date,
+		        i.code, i.custcode, i.cate_md, i.name, i.item_cn, i.input_price, i.output_price, i.deleted
+		FROM item i, comm cm, customer cs
+		WHERE i.code = #{code}
+		AND i.custcode = cs.custcode
+		AND i.cate_lg = cm.ct_lg
+		AND i.cate_md = cm.ct_md
+	</select>
+	
+	<insert id="yrInsertItem" parameterType="Item">
+		INSERT INTO item(code, custcode, cate_md, name, item_cn, input_price, output_price, reg_date, deleted)
+		VALUES(ITEM_CODE_SEQ.nextval, #{custcode}, #{cate_md}, #{name}, #{item_cn}, #{input_price}, #{output_price}, #{reg_date}, #{deleted})
+	</insert>
+	
+	<update id="yrUpdateItem" parameterType="Item">
+		UPDATE item
+		SET custcode = #{custcode},
+		    name = #{name},
+		    cate_md = #{cate_md},
+		    input_price = #{input_price},
+		    output_price = #{output_price},
+		    item_cn = #{item_cn},
+		    deleted = #{deleted},
+		    reg_date = #{reg_date}
+		    <if test="deleted == 1">
+		    	, delete_date = #{delete_date}
+		    </if>    
+		WHERE code = #{code}
+	</update>
+</mapper>

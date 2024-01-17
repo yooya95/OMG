@@ -1,0 +1,71 @@
+server:
+  port: 8334
+  
+# cache
+spring:
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 10000s
+          no-cache: false
+          no-store: false
+          must-revalidate: true
+
+  #File Size
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 30MB
+      max-request-size: 10MB
+
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@3.37.196.20/xe  
+    username: OMG
+    password: tiger
+
+  # Jpa Setting
+  jpa:
+    show-sql: true
+    # Operation --> create / none
+    hibernate:
+      ddl-auto: update
+  # view Resolver
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+      
+ # gmail Transfer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: teamssj02@gmail.com
+    password: kfgt ulmx ztmz fxkl
+    properties: 
+      mail:
+        smtp: 
+          auth: true
+          starttls.enable: true
+          
+# test 중이라 일단은 bkService에만 넣어둠
+logging:
+  level:
+    com.oracle.OMG.service.bkService: DEBUG
+           
+
+# Mybatis
+#mybatis: # classpath는  resources를 의미함(위치)
+#  mapper-locations: classpath:configuration.xml
+#  config-location: classpath:mappers/*.xml
+
+# Mybatis
+mybatis: 
+  config-location: classpath:configuration.xml
+  mapper-locations: classpath:mappers/**/*.xml
+
+
+logging.level:
+  org.hibernate.sql: debug # logger를 통해 하이버네이트 실행 SQL
+  com.oracle.OMG.mappers.jkWarehouse: debug  

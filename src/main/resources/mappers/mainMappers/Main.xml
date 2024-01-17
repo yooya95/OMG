@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.OMG.MainMapper">
+	<select id="shThisMonthSale" resultType="int">
+		Select SUM(qty*price) as monthTotal
+		From   sales_detail
+		Where  SUBSTR(sales_date,1,5) = TO_CHAR(sysdate, 'YY/MM')
+	</select>
+	
+	<select id="shExMonthSale" resultType="int">
+		SELECT SUM(qty * price) as monthTotal
+		FROM sales_detail
+		WHERE TO_CHAR(TO_DATE(sales_date, 'YYYY-MM-DD'), 'YY/MM') = TO_CHAR(ADD_MONTHS(sysdate, -1), 'YY/MM')
+	</select>
+	
+	<select id="shThisMonthPurchase" resultType="int">
+		Select SUM(qty*price) as monthTotal
+		From   pur_detail
+		Where  SUBSTR(pur_date,1,5) = TO_CHAR(sysdate, 'YY/MM') 
+	</select>
+
+	<select id="shExMonthPurchase" resultType="int">
+		SELECT SUM(qty * price) as monthTotal
+		FROM pur_detail
+		WHERE TO_CHAR(TO_DATE(pur_date, 'YYYY-MM-DD'), 'YY/MM') = TO_CHAR(ADD_MONTHS(sysdate, -1), 'YY/MM')		
+	</select>
+	
+	<select id="shMainTeamList" parameterType="int" resultType="Member">
+		Select mem_img, mem_name, mem_posi_md, mem_duty_md
+		From   member
+		Where  mem_status != 2
+		and    mem_dept_md = (
+			Select mem_dept_md
+			From   member
+			Where  mem_id = #{mem_id}
+		)
+	</select>
+	
+	<select id="shMainMember" parameterType="int" resultType="Member">
+		Select mem_name, mem_id, mem_img, mem_hiredate, mem_dept_md, mem_posi_md, mem_duty_md, mem_sex
+		From   member
+		Where  mem_id = #{mem_id}
+	</select>
+	
+	<select id="shMainInventory" resultType="Warehouse">
+	    Select i.code, i.name, NVL(SUM(DISTINCT w.cnt), 0) as cnt, NVL(p.price, 0) as price
+		From item i 
+		Left Join
+		    warehouse w 
+		    	On i.code = w.code 
+		    	And w.inven = 1
+		Left Join
+		    pur_detail p 
+		    	On i.code = p.code
+		Group By
+		    i.code, i.name, p.price
+		Order By
+	    i.code
+	</select>
+	
+	<select id="shMainInventoryCount" resultType="int">
+		Select count(*)
+		From (
+			Select DISTINCT i.code, i.name, NVL(w.cnt,0) as cnt, NVL(p.price,0) as price
+			From item i 
+			Left Join    warehouse w 
+	        	On i.code = w.code
+				And w.inven = 1
+			Left Join    pur_detail p 
+	        	On i.code = p.code
+        	)
+	</select>
+</mapper>

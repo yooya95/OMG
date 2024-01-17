@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.OMG.dto.Member">
+	
+	<select id="bkLogin" parameterType="Member" resultType="Member">
+		Select  *
+		From    member
+		WHERE   mem_id  = #{mem_id}
+		And     mem_pw  = #{mem_pw}
+	</select>
+	
+	
+	
+	<select id="bkCheckNameAndMail1" parameterType="Member" resultType="Member">
+		Select  *
+		From    member
+		WHERE   mem_name  = #{mem_name}
+		And     mem_email = #{mem_email}
+		And     MEM_RESI    is null
+	</select>
+	
+	
+	<update id="bkUpdateTempPw" parameterType="java.util.Map">
+		update  member  
+		Set     mem_pw      = #{RandomPw}
+		Where   mem_name    = #{mem_name}
+		And     MEM_RESI    is null
+	</update>
+	
+	
+</mapper>

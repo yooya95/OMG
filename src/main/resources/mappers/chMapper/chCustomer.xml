@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org/DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.oracle.OMG.mappers.chMapper">
+	<select id="ChcustList" resultType="Customer">
+		Select c.custcode, c.company, c.mem_id, m.mem_name
+		From customer c, member m
+		Where cust_lg = 900
+		and cust_md = 101	
+		and c.mem_id = m.mem_id
+	</select>
+</mapper>

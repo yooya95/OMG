@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config
+3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!--db연동 sql 작성을 위한 셋팅  -->
+<configuration>
+	<typeAliases>
+		<typeAlias alias="Board"		type="com.oracle.OMG.dto.Board"/>
+		<typeAlias alias="Comm"			type="com.oracle.OMG.dto.Comm"/>
+		<typeAlias alias="Customer"		type="com.oracle.OMG.dto.Customer"/>
+		<typeAlias alias="Item"			type="com.oracle.OMG.dto.Item"/>
+		<typeAlias alias="LogIn"		type="com.oracle.OMG.dto.LogIn"/>
+		<typeAlias alias="Member"		type="com.oracle.OMG.dto.Member"/>
+		<typeAlias alias="Purchase"		type="com.oracle.OMG.dto.Purchase"/>
+		<typeAlias alias="PurDetail"	type="com.oracle.OMG.dto.PurDetail"/>
+		<typeAlias alias="Sales"		type="com.oracle.OMG.dto.Sales"/>
+		<typeAlias alias="SalesDetail"	type="com.oracle.OMG.dto.SalesDetail"/>
+		<typeAlias alias="Warehouse"	type="com.oracle.OMG.dto.Warehouse"/>
+		<typeAlias alias="Reply"		type="com.oracle.OMG.dto.Reply"/>
+	</typeAliases>
+</configuration>

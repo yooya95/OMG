@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.OMG.ThReplyMapper">
+	
+	<insert id="insertReply" parameterType="Reply">
+		INSERT INTO reply (rep_id,   brd_id ,   mem_id ,   rep_cn) 
+        VALUES (seq_reply.nextval, #{brd_id}, #{mem_id}, #{rep_cn})
+	</insert>
+	
+	<select id="readReply" parameterType="int" resultType="Reply">
+		SELECT 	reply.*, GET_MEMBER_NAME(mem_id) as mem_name
+		FROM	reply
+		WHERE	rep_id = #{rep_id}
+	</select>
+	
+	<delete id="deleleReply" parameterType="int">
+		DELETE 
+		FROM	reply
+		WHERE	rep_id = #{rep_id}
+	</delete>
+	
+	<update id="updateReply" parameterType="Reply">
+		UPDATE	reply
+		SET		rep_cn   = #{rep_cn},
+				mod_date = SYSDATE
+		WHERE	rep_id   = #{rep_id}
+	</update>
+	
+	<select id="getListWithPagingReply" parameterType="map" resultType="Reply">
+		<![CDATA[
+			SELECT  rep_id, brd_id, rep_cn, mem_id, rep_date, mod_date, GET_MEMBER_NAME(mem_id) as mem_name
+			FROM    (
+			            SELECT  /*+ INDEX(reply idx_reply) */
+			                    rownum rn, brd_id, rep_id, rep_cn, mem_id, rep_date, mod_date
+			            FROM    reply
+			            WHERE   brd_id = #{brd_id}
+			            AND     rep_id > 0
+			            AND     rownum <= #{cri.pageNum} * #{cri.amount}
+			        ) re
+			WHERE rn > (#{cri.pageNum}-1) * #{cri.amount}
+		]]>
+	</select>
+	
+	<select id="getCountByBrd_id" resultType="int">
+		<![CDATA[
+			SELECT 	count(rep_id)
+			FROM	reply
+			WHERE	brd_id = #{brd_id}
+		]]>
+	</select>
+	
+	
+</mapper>

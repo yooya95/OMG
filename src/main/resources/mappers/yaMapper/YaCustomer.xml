@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.OMG.YaCustomer">
+	<select id="customerList" parameterType="customer" resultType="customer">
+ 		 SELECT *
+ 		 FROM (
+ 		 		SELECT  ROWNUM AS rn, a.* 
+ 		 		FROM (
+		 		 		SELECT  c.custcode, c.cust_md, c.custstyle, c.company, c.ceo, c.businum, c.busitype, c.busiitems, c.tel, c.email, c.mem_id, m.mem_name
+		 		 		FROM   customer c
+		 		 		INNER JOIN member m ON c.mem_id = m.mem_id
+		 		 	    WHERE c.mem_id = m.mem_id
+		      		    ORDER BY 	c.custcode DESC) a
+ 		 )
+ 		 WHERE rn BETWEEN #{start} AND #{end}  
+	</select>
+	
+	<select id="totalCustomer" parameterType="customer" resultType="int">
+		SELECT count(*) 
+		FROM customer
+	</select>
+	
+	<select id="customerOne" parameterType="int" resultType="customer">
+    	 SELECT  *
+    	 FROM customer c, member m
+    	 Where custcode =#{custcode}
+    	 AND c.mem_id = m.mem_id	
+	</select>
+	
+	<select id="CmemberList" parameterType="member" resultType="member">
+	    SELECT m.mem_name, m.mem_id, c.com_cn, m.mem_dept_md, c.ct_md
+	    FROM member m
+	    INNER JOIN comm c ON c.ct_md = m.mem_dept_md
+	    WHERE c.ct_lg = 200
+	</select>
+	
+	<select id="customerListSelect" parameterType="customer" resultType="customer">
+		SELECT 		company, custcode
+		FROM 		customer
+		ORDER BY 	custcode DESC
+	</select> 
+	
+	<update id="updateCustomer" parameterType="customer">
+		  UPDATE customer
+		  SET
+			    company    = #{company},
+			    businum    = #{businum},
+			    custstyle  = #{custstyle},
+			    cust_md    = #{cust_md},
+			    ceo        = #{ceo},
+			    busitype   = #{busitype},
+			    busiitems  = #{busiitems},
+			    tel        = #{tel},
+			    email      = #{email},
+			    mem_id     = #{mem_id}
+		  WHERE custcode   = #{custcode}
+	</update>	
+	
+	<insert id="insertCustomer" parameterType="customer">
+		INSERT INTO customer (custcode, mem_id, cust_lg, cust_md, custstyle, company,ceo, businum, busitype, busiitems, tel, email)
+		VALUES (CUSTOMER_CUSTCODE_SEQ.nextval, #{mem_id}, 900, #{cust_md}, #{custstyle},#{company}, #{ceo}, 
+				#{businum}, #{busitype}, #{busiitems}, #{tel}, #{email}) 	
+	</insert>
+	
+	<delete id="deleteCustomer"  parameterType="int">
+		DELETE FROM customer WHERE custcode = #{custcode}
+	</delete>
+	
+	<select id="searchCustomer" parameterType="map" resultType="customer">
+ 		 SELECT *
+ 		 FROM (
+ 		 		SELECT  ROWNUM AS rn, a.* 
+ 		 		FROM (
+		 		 		SELECT     c.custcode, c.cust_md, c.custstyle, c.company, c.ceo, c.businum, c.busitype, c.busiitems, c.tel, c.email, c.mem_id, m.mem_name
+		 		 		FROM  	   customer c
+		 		 		INNER JOIN member m ON c.mem_id = m.mem_id
+		 		 	    WHERE 	   c.mem_id = m.mem_id
+		 		 	    AND 	   (c.custcode LIKE '%' || #{keyword} || '%' OR c.company LIKE '%' || #{keyword} || '%' OR  c.businum LIKE '%' || #{keyword} || '%')
+		      		    ORDER BY c.custcode DESC) a
+ 		 )
+ 		 WHERE rn BETWEEN #{start} AND #{end}  
+	</select>
+	
+	
+	<select id="totalSearch" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM customer c, member m
+		WHERE c.mem_id = m.mem_id
+		AND (c.custcode LIKE '%' || #{keyword} || '%' OR c.company LIKE '%' || #{keyword} || '%' OR  c.businum LIKE '%' || #{keyword} || '%')
+	</select>
+	
+    <select id="customerSalesList" resultType="customer">
+        SELECT pur_date AS purDate,
+               SUBSTR(pur_date, 4, 2) AS month,
+               code AS purCode,
+               qty AS purQty,
+               price AS purPrice,
+               item_name AS itemName,
+               company,
+               custStyle,
+               businum,
+               custcode
+        FROM (
+            SELECT p.pur_date, p.code, p.qty, p.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM pur_detail p
+            JOIN customer c ON c.custcode = p.custcode
+            JOIN item i ON i.code = p.code
+
+            UNION
+
+            SELECT s.sales_date AS pur_date, s.code, s.qty, s.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM sales_detail s
+            JOIN customer c ON c.custcode = s.custcode
+            JOIN item i ON i.code = s.code
+        ) combined_result
+    </select>
+
+   <select id="customerSalesSearch" resultType="customer">
+        SELECT
+            pur_date AS purDate,
+            SUBSTR(pur_date, 4, 2) AS month,
+            code AS purCode,
+            qty AS purQty,
+            price AS purPrice,
+            item_name AS itemName,
+            company,
+            custStyle,
+            businum,
+            custcode
+
+        FROM (
+            SELECT p.pur_date, p.code, p.qty, p.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM pur_detail p
+            JOIN customer c ON c.custcode = p.custcode
+            JOIN item i ON i.code = p.code
+
+            UNION
+
+            SELECT s.sales_date AS pur_date, s.code, s.qty, s.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM sales_detail s
+            JOIN customer c ON c.custcode = s.custcode
+            JOIN item i ON i.code = s.code
+        ) combined_result
+
+        WHERE
+            custcode = #{custcode} 
+            AND SUBSTR(pur_date, 4, 2) = #{month} 
+    </select>
+	
+	<select id="searchAllCustomer"  resultType="customer">
+
+        SELECT
+            pur_date AS purDate,
+            SUBSTR(pur_date, 4, 2) AS month,
+            code AS purCode,
+            qty AS purQty,
+            price AS purPrice,
+            item_name AS itemName,
+            company,
+            custStyle,
+            businum,
+            custcode
+
+        FROM (
+            SELECT p.pur_date, p.code, p.qty, p.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM pur_detail p
+            JOIN customer c ON c.custcode = p.custcode
+            JOIN item i ON i.code = p.code
+
+            UNION
+
+            SELECT s.sales_date AS pur_date, s.code, s.qty, s.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM sales_detail s
+            JOIN customer c ON c.custcode = s.custcode
+            JOIN item i ON i.code = s.code
+        ) combined_result
+
+        WHERE
+             SUBSTR(pur_date, 4, 2) = #{month}
+	</select>
+
+	<select id="searchAllMonths"  resultType="customer" >
+        SELECT
+            pur_date AS purDate,
+            SUBSTR(pur_date, 4, 2) AS month,
+            code AS purCode,
+            qty AS purQty,
+            price AS purPrice,
+            item_name AS itemName,
+            company,
+            custStyle,
+            businum,
+            custcode
+
+        FROM (
+            SELECT p.pur_date, p.code, p.qty, p.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM pur_detail p
+            JOIN customer c ON c.custcode = p.custcode
+            JOIN item i ON i.code = p.code
+
+            UNION
+
+            SELECT s.sales_date AS pur_date, s.code, s.qty, s.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM sales_detail s
+            JOIN customer c ON c.custcode = s.custcode
+            JOIN item i ON i.code = s.code
+        ) combined_result
+
+        WHERE
+			custcode=#{custcode}
+	</select>
+   <select id="SearchForAll" resultType="customer">
+        SELECT
+            pur_date AS purDate,
+            SUBSTR(pur_date, 4, 2) AS month,
+            code AS purCode,
+            qty AS purQty,
+            price AS purPrice,
+            item_name AS itemName,
+            company,
+            custStyle,
+            businum,
+            custcode
+
+        FROM (
+            SELECT p.pur_date, p.code, p.qty, p.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM pur_detail p
+            JOIN customer c ON c.custcode = p.custcode
+            JOIN item i ON i.code = p.code
+
+            UNION
+
+            SELECT s.sales_date AS pur_date, s.code, s.qty, s.price, i.name AS item_name, c.company, c.custStyle, c.businum, c.custcode
+            FROM sales_detail s
+            JOIN customer c ON c.custcode = s.custcode
+            JOIN item i ON i.code = s.code
+        ) combined_result
+
+        WHERE
+            custcode = #{custcode} or #{custcode} = '0'
+            AND SUBSTR(pur_date, 4, 2) = #{month} OR #{month} = '0'
+    </select>
+	
+</mapper>

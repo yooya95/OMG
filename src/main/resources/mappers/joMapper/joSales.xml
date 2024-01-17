@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.oracle.OMG.mappers.joSales">
+	<select id="joListSalesInquiry" parameterType="SalesDetail" resultType="SalesDetail">
+		SELECT *
+		FROM 
+		(
+		    SELECT ROWNUM rn, x.*
+		    FROM
+			(
+		         SELECT sd.*, i.name, s.title, s.sales_status, c.company
+		         FROM item i, sales s, customer c,
+		        (
+		          SELECT subquery.*, total.total_price
+		          FROM 
+		          (
+		               SELECT sales_date, custcode, code, qty, price,
+		                      ROW_NUMBER() OVER (PARTITION BY sales_date, custcode ORDER BY code) AS row_num
+		              FROM sales_detail
+		           ) subquery,
+		          (
+		               SELECT sales_date, custcode, to_char(sum(qty * price), 'L999,999,999') as total_price
+		               FROM sales_detail
+		               GROUP BY sales_date, custcode
+		           ) total
+		           WHERE subquery.row_num = 1
+		           AND subquery.sales_date = total.sales_date
+		           AND subquery.custcode = total.custcode
+		         ) sd
+		     WHERE sd.code = i.code
+		     AND   sd.sales_date = s.sales_date
+		     AND   sd.custcode = s.custcode
+		     AND   sd.custcode = c.custcode
+		    ORDER BY sd.sales_date desc
+		    ) x
+		)    
+		WHERE rn BETWEEN #{start} and #{end}
+	</select>
+	
+	
+	<select id="joGetTotalSalesInquiry" resultType="int">
+		SELECT count(*) 
+        FROM   sales s
+	</select>
+	
+	
+	<select id="joSearchSalesInquiry" parameterType="SalesDetail" resultType="SalesDetail">
+	
+		SELECT *
+    	FROM 
+		(
+		    SELECT ROWNUM rn, x.*
+		    FROM
+		    (
+                SELECT sd.*, i.name, s.title, s.sales_status, c.company, TO_CHAR(sd.qty * sd.price, 'L999,999,999') AS total_price
+                FROM item i, sales s, customer c,
+                (
+                    SELECT subquery.*
+                    FROM 
+                    (
+                      SELECT sales_date, custcode, code, qty, price,
+                             ROW_NUMBER() OVER (PARTITION BY sales_date, custcode ORDER BY code) AS row_num
+                      FROM sales_detail
+                    ) subquery
+                    WHERE row_num = 1
+                ) sd
+               WHERE sd.code = i.code
+               AND   sd.sales_date = s.sales_date
+               AND   sd.custcode = s.custcode
+               AND   sd.custcode = c.custcode
+               <choose>
+					<when test="search == 's_company'">
+						AND c.company like '%' || #{keyword} || '%'
+					</when>
+					<when test="search == 's_item'">
+						AND UPPER(i.name) like '%' || UPPER(#{keyword}) || '%'
+					</when>
+					<otherwise>
+						AND c.company like '%'
+					</otherwise>		
+				</choose>
+               ORDER BY sd.sales_date
+            ) x
+    	)        
+		WHERE rn BETWEEN #{start} and #{end}
+	</select>
+	
+	<select id="joGetSearchTotalSalesInquiry" parameterType="salesDetail" resultType="int">
+		SELECT count(*)
+		FROM   sales_detail sd, sales s, customer c, item i
+		WHERE  sd.custcode = c.custcode
+		AND    sd.code = i.code
+		AND    sd.sales_date = s.sales_date
+		<choose>
+			<when test="search == 's_company'">
+				AND c.company like '%' || #{keyword} || '%'
+			</when>
+			<when test="search == 's_item'">
+				AND i.name like '%' || #{keyword} || '%'
+			</when>
+			<otherwise>
+				AND c.company like '%'
+			</otherwise>		
+		</choose>
+	 </select>
+	
+	
+	 <select id="joGetSortTotalSalesInquiry" resultType="int">
+		SELECT count(*)
+		FROM   sales_detail sd, sales s, customer c, item i
+		WHERE  sd.custcode = c.custcode
+		AND    sd.code = i.code
+		AND    sd.sales_date = s.sales_date
+		AND    s.sales_status = #{sales_status}	
+	  </select>
+	
+		
+	<select id="joSortSalesInquiry" parameterType="SalesDetail" resultType="SalesDetail">
+		SELECT *
+    	FROM 
+		(
+		    SELECT ROWNUM rn, x.*
+		    FROM
+		    (
+                SELECT sd.*, i.name, s.title, s.sales_status, c.company, TO_CHAR(sd.qty * sd.price, 'L999,999,999') AS total_price
+                FROM item i, sales s, customer c,
+                (
+                    SELECT subquery.*
+                    FROM 
+                    (
+                      SELECT sales_date, custcode, code, qty, price,
+                             ROW_NUMBER() OVER (PARTITION BY sales_date, custcode ORDER BY code) AS row_num
+                      FROM sales_detail
+                    ) subquery
+                    WHERE row_num = 1
+                ) sd
+               WHERE sd.code = i.code
+               AND   sd.sales_date = s.sales_date
+               AND   sd.custcode = s.custcode
+               AND   sd.custcode = c.custcode
+               AND   s.sales_status = #{sales_status}
+               ORDER BY sd.sales_date
+            ) x
+    	)        
+		WHERE rn BETWEEN #{start} and #{end}
+	
+	
+	</select>
+		
+	
+	<delete id="joDeleteSalesDetail" parameterType="SalesDetail">
+		DELETE FROM sales_detail
+		WHERE       sales_date = #{sales_date}
+		AND 		custcode   = #{custcode}
+	</delete>
+	
+	
+	<select id="joGetListCustCode" parameterType="int" resultType="SalesDetail">
+		SELECT *
+		FROM   customer
+		WHERE  custstyle = #{custstyle}
+	</select>
+	
+	
+	<insert id="joInsertSalesDetail" parameterType="SalesDetail">
+		INSERT INTO sales_detail(sales_date, custcode, code, qty, price)
+		VALUES                  (#{sales_date}, #{custcode}, #{code}, #{qty}, #{price}) 
+	</insert>
+	
+	
+	<select id="joGetSalesDetail" parameterType="SalesDetail" resultType="SalesDetail">
+		SELECT *
+		FROM
+		(
+    		SELECT sd.*, i.name, TO_CHAR(sd.qty * sd.price, 'L999,999,999') AS total_price
+    		FROM   sales_detail sd, item i
+		    WHERE  sd.code = i.code
+		 ) x    
+		 WHERE x.sales_date = #{sales_date}
+		 AND   x.custcode   = #{custcode}
+	</select>
+	
+	
+	<select id="joGetTotalSalesDetail" parameterType="SalesDetail" resultType="int">
+		SELECT COUNT(*)
+		FROM   sales_detail
+		WHERE  sales_date = #{sales_date} 
+		AND    custcode   = #{custcode}
+	</select>
+	
+	
+	<update id="joUpdateSalesDetail" parameterType="SalesDetail">
+		UPDATE sales_detail 
+		SET	   code=#{afterCode}, qty=#{qty}, price=#{price}
+		WHERE  sales_date = #{sales_date} 
+		AND    custcode   = #{custcode}
+		AND    code=#{beforeCode}
+	</update>
+	
+	
+	<!-- Sales 테이블 -->
+	<delete id="joDeleteSales" parameterType="SalesDetail">
+		DELETE FROM sales
+		WHERE       sales_date = #{sales_date}
+		AND 		custcode   = #{custcode}
+	</delete>
+	
+	
+	<insert id="joInsertSales" parameterType="SalesDetail">
+		INSERT INTO sales(sales_date, custcode, sales_status, title, ref)
+		VALUES           (#{sales_date}, #{custcode}, '1', #{title}, #{ref}) 
+	</insert>
+	
+	
+	<select id="joGetSalesData" parameterType="SalesDetail" resultType="SalesDetail">
+		SELECT *
+		FROM   sales
+		WHERE  sales_date = #{sales_date}
+		AND    custcode   = #{custcode}
+	</select>
+	
+	
+	<update id="joUpdateSales" parameterType="Sales">
+		UPDATE sales 
+		SET    sales_status=#{sales_status}, title=#{title}, ref=#{ref}
+		WHERE  sales_date=#{sales_date}
+		AND    custcode=#{custcode}   
+	</update>
+	
+	
+	<delete id="joDeleteSelectedSalesDetail" parameterType="java.util.List">
+	    DELETE FROM sales_detail
+	    WHERE sales_detail_id IN
+	    <foreach collection="list" open="(" close=")" separator=",">
+	        #{value}
+	    </foreach>
+	</delete>
+	
+	
+	<!-- Item 테이블 -->
+	<select id="joGetListProdcut" resultType="SalesDetail">
+		SELECT *
+		FROM   item
+	</select>
+		
+	
+</mapper>

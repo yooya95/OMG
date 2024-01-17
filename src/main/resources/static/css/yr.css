@@ -1,0 +1,49 @@
+/* a태그 색상 바꾸기 */
+.linkText { 
+	color: #697a8d;
+}
+
+/* table thead 고정 */
+.tableFixed	{ 
+	overflow: auto; 
+}
+
+/* table thead 고정 */
+.fixedHeader thead tr th { 
+	position: sticky;
+	top: 0;
+}
+
+/* table 사이즈 고정 */
+.fixedTable {
+	table-layout: fixed; 
+}
+
+.fixedCol15 {
+	width: 15%;
+}
+
+.fixedCol20 {
+	width: 20%;
+}
+
+.fixedCol25 {
+	width: 25%;
+}
+
+.fixedCol35 {
+	width: 35%;
+}
+
+.fixedCol40 {
+	width: 40%;
+}
+
+.fixedCol45 {
+	width: 45%;
+}
+
+.ellipsis {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

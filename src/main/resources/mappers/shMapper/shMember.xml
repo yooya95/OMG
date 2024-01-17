@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oracle.OMG.shMember">
+	<insert id="shCreateMember" parameterType="Member">
+		Insert Into Member(mem_id, mem_right, mem_name, mem_img, mem_email, mem_hiredate, mem_bd, mem_sex, mem_phone, mem_dept_lg, mem_dept_md, mem_posi_lg, mem_posi_md, mem_duty_lg, mem_duty_md, mem_mailcode, mem_address, mem_pw, reg_date, mem_status)
+		values (mem_id_seq.nextval,#{mem_right}, #{mem_name}, #{mem_img}, #{mem_email}, #{mem_hiredate}, #{mem_bd}, #{mem_sex}, #{mem_phone}, 200, #{mem_dept_md},300,#{mem_posi_md},400, #{mem_duty_md}, #{mem_mailcode}, #{mem_address}, #{mem_pw}, sysdate, 0)
+	</insert>
+	
+	<select id="shMemberList" parameterType="Member" resultType="Member">
+		Select a.*
+		From (
+			Select rownum rn, mem_hiredate, mem_id, mem_name, mem_dept_md, 
+				   mem_posi_md, mem_email, mem_leave, mem_rein, mem_resi, mem_status
+			From member
+			)a
+		Where rn between #{start} and #{end}
+		ORDER BY rn
+	</select>
+	
+	<select id="shStatusList" resultType="Member">
+		Select Distinct mem_status From member Order By mem_status
+	</select>
+	
+	<select id="shMemberTotal" resultType="int">
+		Select count(*)
+		From member
+	</select>
+	
+	<select id="shMemberSearchList" parameterType="Member" resultType="Member">
+	<![CDATA[
+		Select a.*
+		From 
+			(Select rownum rn, mem_hiredate, mem_id, mem_name, mem_dept_md, mem_posi_md, mem_email, mem_leave, mem_rein, mem_resi
+			From member Where mem_id LIKE '%'||#{keyword}||'%')a
+		Where rn between #{start} and #{end, jdbcType=INTEGER}
+		ORDER BY rn
+	]]>
+	</select>
+	
+
+	
+	<select id="shSearchMemberTotal" parameterType="Member" resultType="int"> 
+		Select count(*) From member Where mem_id LIKE '%'||#{keyword}||'%' 
+	</select>
+	
+	<select id="shSearchMemberDetail" parameterType="int" resultType="Member"> 
+		Select * From member Where mem_id = #{mem_id}
+	</select>
+	
+	<update id="shUpdateLeaveMember" parameterType="Member">
+		Update Member 
+		Set 
+			mem_img=#{mem_img}, mem_name=#{mem_name}, mem_pw=#{mem_pw}, mem_bd=#{mem_bd}, mem_sex=#{mem_sex}, 
+			mem_email=#{mem_email}, mem_mailcode=#{mem_mailcode}, mem_address=#{mem_address}, mem_hiredate=#{mem_hiredate}, 
+			mem_dept_md=#{mem_dept_md}, mem_posi_md=#{mem_posi_md}, mem_duty_md=#{mem_duty_md}, mem_phone=#{mem_phone}, 
+			mem_leave=#{mem_leave}, mem_rein=null, mem_resi=null, mem_right=#{mem_right}, 
+			mem_status=1 
+		Where 
+			mem_id = #{mem_id}
+	</update>
+		
+	<update id="shUpdateReinMember" parameterType="Member">
+		Update Member 
+			Set 
+				mem_img=#{mem_img}, mem_name=#{mem_name}, mem_pw=#{mem_pw}, mem_bd=#{mem_bd}, mem_sex=#{mem_sex}, 
+				mem_email=#{mem_email}, mem_mailcode=#{mem_mailcode}, mem_address=#{mem_address}, mem_hiredate=#{mem_hiredate}, 
+				mem_dept_md=#{mem_dept_md}, mem_posi_md=#{mem_posi_md}, mem_duty_md=#{mem_duty_md}, mem_phone=#{mem_phone}, 
+				mem_leave=null, mem_rein=#{mem_rein}, mem_resi=null, mem_right=#{mem_right}, 
+				mem_status=0 
+			Where 
+				mem_id = #{mem_id}
+	</update>
+	
+	<update id="shUpdateResiMember" parameterType="Member">
+		Update Member 
+			Set 
+				mem_img=#{mem_img}, mem_name=#{mem_name}, mem_pw=#{mem_pw}, mem_bd=#{mem_bd}, mem_sex=#{mem_sex}, 
+				mem_email=#{mem_email}, mem_mailcode=#{mem_mailcode}, mem_address=#{mem_address}, mem_hiredate=#{mem_hiredate}, 
+				mem_dept_md=#{mem_dept_md}, mem_posi_md=#{mem_posi_md}, mem_duty_md=#{mem_duty_md}, mem_phone=#{mem_phone}, 
+				mem_leave=null, mem_rein=null, mem_resi=#{mem_resi}, mem_right=#{mem_right}, 
+				mem_status=2 
+			Where 
+				mem_id = #{mem_id}
+	</update>
+	
+	<update id="shUpdateMember" parameterType="Member">
+		Update Member 
+				Set 
+					mem_img= #{mem_img}, mem_name= #{mem_name}, mem_pw= #{mem_pw}, mem_bd= #{mem_bd}, mem_sex= #{mem_sex}, 
+					mem_email= #{mem_email}, mem_mailcode= #{mem_mailcode}, mem_address= #{mem_address}, mem_hiredate= #{mem_hiredate}, 
+					mem_dept_md= #{mem_dept_md}, mem_posi_md= #{mem_posi_md}, mem_duty_md= #{mem_duty_md}, mem_phone= #{mem_phone}, 
+					mem_right= #{mem_right}, mem_status= #{mem_status}
+				Where 
+					mem_id = #{mem_id}
+	</update>
+	
+	<update id="shDetailMember" parameterType="Member">
+		Update Member 
+				Set 
+					mem_name= #{mem_name}, mem_pw= #{mem_pw}, mem_bd= #{mem_bd}, mem_sex= #{mem_sex}, 
+					mem_email= #{mem_email}, mem_mailcode= #{mem_mailcode}, mem_address= #{mem_address}, 
+					mem_phone= #{mem_phone}
+				Where 
+					mem_id = #{mem_id}
+	</update>
+</mapper>

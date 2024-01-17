@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.oracle.OMG.ThQnAMapper">
+	
+	<select id="thTotQnA" resultType="int">
+		SELECT 	COUNT(*) 
+		FROM 	board
+		WHERE	brd_md=101
+		AND		brd_step=0
+	</select>
+	
+	<select id="ThSelectQnAList" parameterType="Board" resultType="Board">
+		SELECT b.*, (
+                    SELECT  mem_name
+                    FROM    member m
+                    WHERE   m.mem_id = b.mem_id
+                  ) AS mem_name
+		FROM 
+			(
+				SELECT rownum rn, a.*
+				FROM
+					(
+						SELECT 		* 
+					 	FROM 		board
+					 	WHERE		brd_md   = 101
+					 	AND			brd_step = 0 
+					 	ORDER BY 	brd_id DESC) a
+			) b
+		WHERE rn BETWEEN #{start} AND #{end}
+	</select>
+	
+	<select id="ThSelectQnADetail" parameterType="Board" resultType="Board">
+		SELECT 	b.*, (
+                    SELECT  mem_name
+                    FROM    member m
+                    WHERE   m.mem_id = b.mem_id
+                   ) AS mem_name
+		FROM	board b
+		WHERE	b.brd_id = ${brd_id}
+	</select>
+	
+	
+</mapper>
